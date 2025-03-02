@@ -102,40 +102,51 @@
             margin-top: 10px;
             text-align: right;
         }
-        .modal {
-            position: fixed;
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
         }
-        .modal-content {
-            background-color: #333;
-            padding: 20px;
-            border-radius: 5px;
-            width: 80%;
-            max-width: 400px;
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
         }
-        .modal-title {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
+        input:checked + .slider {
+            background-color: #2196F3;
         }
-        .modal-actions {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
+        input:checked + .slider:before {
+            transform: translateX(26px);
         }
     </style>
 </head>
 <body>
     <div id="start-screen" class="screen">
         <h1>Heads Up Charades</h1>
-        <p>Flip phone forward to pass, backward to mark correct</p>
+        <p>Swipe up/down to mark correct/incorrect</p>
         <button id="start-btn" class="btn">Start Game</button>
         <button id="modes-btn" class="btn">Game Modes</button>
         <button id="settings-btn" class="btn">Settings</button>
@@ -144,7 +155,6 @@
     <div id="game-screen" class="screen game-screen" style="display: none;">
         <div class="timer" id="timer">60</div>
         <div class="word" id="current-word">Ready?</div>
-        <button id="back-game-btn" class="btn" style="margin-top: 50px;">Back</button>
     </div>
 
     <div id="correct-screen" class="screen correct-screen" style="display: none;">
@@ -170,6 +180,18 @@
         <div class="setting-item">
             <label for="timer-setting">Timer (seconds):</label>
             <input type="number" id="timer-setting" min="10" max="300" value="60">
+        </div>
+        <div class="setting-item">
+            <label for="invert-controls">
+                Invert Controls:
+                <span style="font-size: 0.8rem; display: block;">
+                    Default: Swipe UP = Correct, Swipe DOWN = Incorrect
+                </span>
+            </label>
+            <label class="switch">
+                <input type="checkbox" id="invert-controls">
+                <span class="slider"></span>
+            </label>
         </div>
         <button id="save-settings-btn" class="btn">Save Settings</button>
         <button id="cancel-settings-btn" class="btn">Cancel</button>
@@ -197,17 +219,6 @@
         <button id="save-mode-btn" class="btn">Save Mode</button>
         <button id="cancel-mode-btn" class="btn">Cancel</button>
     </div>
-    
-    <div id="back-confirm-modal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-title">Game in Progress</div>
-            <p>What would you like to do?</p>
-            <div class="modal-actions">
-                <button id="continue-game-btn" class="btn">Continue Game</button>
-                <button id="exit-game-btn" class="btn">Exit to Home</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         // DOM Elements
@@ -219,12 +230,10 @@
         const settingsScreen = document.getElementById('settings-screen');
         const modesScreen = document.getElementById('modes-screen');
         const editModeScreen = document.getElementById('edit-mode-screen');
-        const backConfirmModal = document.getElementById('back-confirm-modal');
         
         const startBtn = document.getElementById('start-btn');
         const settingsBtn = document.getElementById('settings-btn');
         const modesBtn = document.getElementById('modes-btn');
-        const backGameBtn = document.getElementById('back-game-btn');
         const playAgainBtn = document.getElementById('play-again-btn');
         const homeBtn = document.getElementById('home-btn');
         const saveSettingsBtn = document.getElementById('save-settings-btn');
@@ -233,8 +242,6 @@
         const backModesBtn = document.getElementById('back-modes-btn');
         const saveModeBtn = document.getElementById('save-mode-btn');
         const cancelModeBtn = document.getElementById('cancel-mode-btn');
-        const continueGameBtn = document.getElementById('continue-game-btn');
-        const exitGameBtn = document.getElementById('exit-game-btn');
         
         const timerElement = document.getElementById('timer');
         const currentWordElement = document.getElementById('current-word');
@@ -242,6 +249,7 @@
         const modesList = document.getElementById('modes-list');
         
         const timerSetting = document.getElementById('timer-setting');
+        const invertControls = document.getElementById('invert-controls');
         const modeName = document.getElementById('mode-name');
         const modeWords = document.getElementById('mode-words');
         const editModeTitle = document.getElementById('edit-mode-title');
@@ -254,16 +262,21 @@
         let correctCount = 0;
         let passCount = 0;
         let isGameRunning = false;
-        let deviceOrientationSupported = false;
         let currentMode = null;
         let modes = [];
         let editingModeIndex = -1;
+        let controlsInverted = false;
 
         // Load settings and modes from localStorage
         function loadSettings() {
             if (localStorage.getItem('timerSetting')) {
                 timerSetting.value = localStorage.getItem('timerSetting');
                 timerValue = parseInt(timerSetting.value);
+            }
+            
+            if (localStorage.getItem('controlsInverted')) {
+                controlsInverted = localStorage.getItem('controlsInverted') === 'true';
+                invertControls.checked = controlsInverted;
             }
             
             if (localStorage.getItem('gameModes')) {
@@ -286,7 +299,10 @@
         // Save settings to localStorage
         function saveSettings() {
             localStorage.setItem('timerSetting', timerSetting.value);
+            localStorage.setItem('controlsInverted', invertControls.checked);
+            
             timerValue = parseInt(timerSetting.value);
+            controlsInverted = invertControls.checked;
             
             showScreen(startScreen);
         }
@@ -495,16 +511,6 @@
             showScreen(gameScreen);
         }
 
-        // Show the back confirmation modal
-        function showBackConfirmation() {
-            backConfirmModal.style.display = 'flex';
-        }
-
-        // Hide the back confirmation modal
-        function hideBackConfirmation() {
-            backConfirmModal.style.display = 'none';
-        }
-
         // Helper function to show only one screen
         function showScreen(screenToShow) {
             [startScreen, gameScreen, correctScreen, passScreen, resultScreen, settingsScreen, modesScreen, editModeScreen].forEach(screen => {
@@ -522,70 +528,7 @@
             }
         }
 
-        // Check for device orientation support
-        function setupOrientationDetection() {
-            if (window.DeviceOrientationEvent) {
-                window.addEventListener('deviceorientation', handleOrientation);
-                deviceOrientationSupported = true;
-                
-                // Some browsers require permission
-                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    document.body.addEventListener('click', () => {
-                        DeviceOrientationEvent.requestPermission()
-                            .then(permissionState => {
-                                if (permissionState === 'granted') {
-                                    window.addEventListener('deviceorientation', handleOrientation);
-                                    deviceOrientationSupported = true;
-                                }
-                            })
-                            .catch(console.error);
-                    }, {once: true});
-                }
-            } else {
-                console.log('Device orientation not supported');
-                // Add keyboard controls as fallback
-                setupKeyboardControls();
-            }
-        }
-
-        // Process orientation data based on your diagram
-        let lastBeta = 0;
-        let isTransitioning = false;
-        
-        function handleOrientation(event) {
-            if (!isGameRunning || isTransitioning) return;
-            
-            // Beta is front-to-back tilt
-            const beta = event.beta;
-            
-            // Check for significant forward/backward tilt as shown in your diagram
-            if (beta < -40 && lastBeta > -20) {  // Tilted forward (around X axis)
-                isTransitioning = true;
-                passWord(); // Incorrect
-                setTimeout(() => { isTransitioning = false; }, 800);
-            } else if (beta > 40 && lastBeta < 20) {  // Tilted backward (around X axis)
-                isTransitioning = true;
-                correctGuess(); // Correct
-                setTimeout(() => { isTransitioning = false; }, 800);
-            }
-            
-            lastBeta = beta;
-        }
-
-        // Fallback keyboard controls
-        function setupKeyboardControls() {
-            document.addEventListener('keydown', (event) => {
-                if (!isGameRunning) return;
-                
-                if (event.key === 'ArrowUp') {
-                    passWord(); // Incorrect
-                } else if (event.key === 'ArrowDown') {
-                    correctGuess(); // Correct
-                }
-            });
-        }
-
-        // Add touch/swipe support as another fallback
+        // Add touch/swipe support
         function setupTouchControls() {
             let startY = 0;
             
@@ -599,10 +542,44 @@
                 const endY = event.changedTouches[0].clientY;
                 const diffY = endY - startY;
                 
-                if (diffY < -50) {  // Swiped up
-                    passWord(); // Incorrect
-                } else if (diffY > 50) {  // Swiped down
-                    correctGuess(); // Correct
+                // Swipe detection with inverted controls setting
+                if (Math.abs(diffY) > 50) {  // Minimum swipe distance
+                    if (!controlsInverted) {
+                        // Default: Swipe UP = Correct, Swipe DOWN = Incorrect
+                        if (diffY < 0) {  // Swiped up
+                            correctGuess();
+                        } else {  // Swiped down
+                            passWord();
+                        }
+                    } else {
+                        // Inverted: Swipe DOWN = Correct, Swipe UP = Incorrect
+                        if (diffY < 0) {  // Swiped up
+                            passWord();
+                        } else {  // Swiped down
+                            correctGuess();
+                        }
+                    }
+                }
+            });
+        }
+
+        // Fallback keyboard controls
+        function setupKeyboardControls() {
+            document.addEventListener('keydown', (event) => {
+                if (!isGameRunning) return;
+                
+                if (!controlsInverted) {
+                    if (event.key === 'ArrowUp') {
+                        correctGuess();
+                    } else if (event.key === 'ArrowDown') {
+                        passWord();
+                    }
+                } else {
+                    if (event.key === 'ArrowUp') {
+                        passWord();
+                    } else if (event.key === 'ArrowDown') {
+                        correctGuess();
+                    }
                 }
             });
         }
@@ -621,17 +598,6 @@
         settingsBtn.addEventListener('click', () => showScreen(settingsScreen));
         modesBtn.addEventListener('click', () => showScreen(modesScreen));
         
-        backGameBtn.addEventListener('click', showBackConfirmation);
-        continueGameBtn.addEventListener('click', () => {
-            hideBackConfirmation();
-        });
-        exitGameBtn.addEventListener('click', () => {
-            hideBackConfirmation();
-            clearInterval(timerInterval);
-            isGameRunning = false;
-            showScreen(startScreen);
-        });
-        
         playAgainBtn.addEventListener('click', startGame);
         homeBtn.addEventListener('click', () => showScreen(startScreen));
         
@@ -648,9 +614,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadSettings();
             showScreen(startScreen);
-            setupOrientationDetection();
             setupTouchControls();
-            setupKeyboardControls(); // Always set up keyboard fallback
+            setupKeyboardControls();
         });
     </script>
 </body>
