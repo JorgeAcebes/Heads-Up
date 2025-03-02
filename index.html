@@ -43,10 +43,11 @@
             color: white;
             padding: 20px;
         }
-        .settings-screen {
+        .settings-screen, .modes-screen, .edit-mode-screen {
             background-color: #333;
             color: white;
             padding: 20px;
+            overflow-y: auto;
         }
         .word {
             font-size: 3rem;
@@ -86,19 +87,64 @@
         .setting-item input, .setting-item select {
             padding: 8px;
         }
+        .mode-item {
+            background-color: #444;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .mode-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .mode-action {
+            margin-top: 10px;
+            text-align: right;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 400px;
+        }
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <div id="start-screen" class="screen">
         <h1>Heads Up Charades</h1>
-        <p>Flip phone up to pass, down to mark correct</p>
+        <p>Flip phone forward to pass, backward to mark correct</p>
         <button id="start-btn" class="btn">Start Game</button>
+        <button id="modes-btn" class="btn">Game Modes</button>
         <button id="settings-btn" class="btn">Settings</button>
     </div>
 
     <div id="game-screen" class="screen game-screen" style="display: none;">
         <div class="timer" id="timer">60</div>
         <div class="word" id="current-word">Ready?</div>
+        <button id="back-game-btn" class="btn" style="margin-top: 50px;">Back</button>
     </div>
 
     <div id="correct-screen" class="screen correct-screen" style="display: none;">
@@ -106,7 +152,7 @@
     </div>
 
     <div id="pass-screen" class="screen pass-screen" style="display: none;">
-        <div class="action">NEXT!</div>
+        <div class="action">INCORRECT!</div>
     </div>
 
     <div id="result-screen" class="screen result-screen" style="display: none;">
@@ -125,31 +171,42 @@
             <label for="timer-setting">Timer (seconds):</label>
             <input type="number" id="timer-setting" min="10" max="300" value="60">
         </div>
-        <div class="setting-item">
-            <label for="words-list">Word List (one word/phrase per line):</label>
-            <textarea id="words-list">Dog
-Cat
-Elephant
-Lion
-Soccer
-Basketball
-Swimming
-Dancing
-Pizza
-Ice Cream
-Airplane
-Car
-Computer
-Smartphone
-Book
-Movie
-Singing
-Running
-Sleeping
-Laughing</textarea>
-        </div>
         <button id="save-settings-btn" class="btn">Save Settings</button>
         <button id="cancel-settings-btn" class="btn">Cancel</button>
+    </div>
+
+    <div id="modes-screen" class="screen modes-screen" style="display: none;">
+        <h2>Game Modes</h2>
+        <div id="modes-list">
+            <!-- Modes will be populated here -->
+        </div>
+        <button id="add-mode-btn" class="btn">Add New Mode</button>
+        <button id="back-modes-btn" class="btn">Back</button>
+    </div>
+
+    <div id="edit-mode-screen" class="screen edit-mode-screen" style="display: none;">
+        <h2 id="edit-mode-title">Edit Mode</h2>
+        <div class="setting-item">
+            <label for="mode-name">Mode Name:</label>
+            <input type="text" id="mode-name" placeholder="Enter mode name">
+        </div>
+        <div class="setting-item">
+            <label for="mode-words">Words/Phrases (one per line):</label>
+            <textarea id="mode-words" placeholder="Enter words or phrases, one per line"></textarea>
+        </div>
+        <button id="save-mode-btn" class="btn">Save Mode</button>
+        <button id="cancel-mode-btn" class="btn">Cancel</button>
+    </div>
+    
+    <div id="back-confirm-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-title">Game in Progress</div>
+            <p>What would you like to do?</p>
+            <div class="modal-actions">
+                <button id="continue-game-btn" class="btn">Continue Game</button>
+                <button id="exit-game-btn" class="btn">Exit to Home</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -160,20 +217,34 @@ Laughing</textarea>
         const passScreen = document.getElementById('pass-screen');
         const resultScreen = document.getElementById('result-screen');
         const settingsScreen = document.getElementById('settings-screen');
+        const modesScreen = document.getElementById('modes-screen');
+        const editModeScreen = document.getElementById('edit-mode-screen');
+        const backConfirmModal = document.getElementById('back-confirm-modal');
         
         const startBtn = document.getElementById('start-btn');
         const settingsBtn = document.getElementById('settings-btn');
+        const modesBtn = document.getElementById('modes-btn');
+        const backGameBtn = document.getElementById('back-game-btn');
         const playAgainBtn = document.getElementById('play-again-btn');
         const homeBtn = document.getElementById('home-btn');
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const cancelSettingsBtn = document.getElementById('cancel-settings-btn');
+        const addModeBtn = document.getElementById('add-mode-btn');
+        const backModesBtn = document.getElementById('back-modes-btn');
+        const saveModeBtn = document.getElementById('save-mode-btn');
+        const cancelModeBtn = document.getElementById('cancel-mode-btn');
+        const continueGameBtn = document.getElementById('continue-game-btn');
+        const exitGameBtn = document.getElementById('exit-game-btn');
         
         const timerElement = document.getElementById('timer');
         const currentWordElement = document.getElementById('current-word');
         const scoreElement = document.getElementById('score');
+        const modesList = document.getElementById('modes-list');
         
         const timerSetting = document.getElementById('timer-setting');
-        const wordsList = document.getElementById('words-list');
+        const modeName = document.getElementById('mode-name');
+        const modeWords = document.getElementById('mode-words');
+        const editModeTitle = document.getElementById('edit-mode-title');
         
         // Game variables
         let words = [];
@@ -184,33 +255,163 @@ Laughing</textarea>
         let passCount = 0;
         let isGameRunning = false;
         let deviceOrientationSupported = false;
+        let currentMode = null;
+        let modes = [];
+        let editingModeIndex = -1;
 
-        // Load settings from localStorage
+        // Load settings and modes from localStorage
         function loadSettings() {
             if (localStorage.getItem('timerSetting')) {
                 timerSetting.value = localStorage.getItem('timerSetting');
                 timerValue = parseInt(timerSetting.value);
             }
             
-            if (localStorage.getItem('wordsList')) {
-                wordsList.value = localStorage.getItem('wordsList');
+            if (localStorage.getItem('gameModes')) {
+                modes = JSON.parse(localStorage.getItem('gameModes'));
+            } else {
+                // Default mode if none exist
+                modes = [{
+                    name: 'Animals',
+                    words: 'Dog\nCat\nElephant\nLion\nTiger\nGiraffe\nMonkey\nZebra\nKoala\nKangaroo'
+                }, {
+                    name: 'Sports',
+                    words: 'Soccer\nBasketball\nTennis\nSwimming\nGolf\nBaseball\nVolleyball\nHockey\nSurfing\nSkiing'
+                }];
+                localStorage.setItem('gameModes', JSON.stringify(modes));
             }
+            
+            updateModesList();
         }
 
         // Save settings to localStorage
         function saveSettings() {
             localStorage.setItem('timerSetting', timerSetting.value);
-            localStorage.setItem('wordsList', wordsList.value);
             timerValue = parseInt(timerSetting.value);
             
             showScreen(startScreen);
         }
 
+        // Update the modes list in the UI
+        function updateModesList() {
+            modesList.innerHTML = '';
+            
+            modes.forEach((mode, index) => {
+                const modeItem = document.createElement('div');
+                modeItem.className = 'mode-item';
+                
+                const modeName = document.createElement('div');
+                modeName.className = 'mode-name';
+                modeName.textContent = mode.name;
+                
+                const wordCount = mode.words.split('\n').filter(word => word.trim() !== '').length;
+                const modeInfo = document.createElement('div');
+                modeInfo.textContent = `${wordCount} words/phrases`;
+                
+                const modeAction = document.createElement('div');
+                modeAction.className = 'mode-action';
+                
+                const playBtn = document.createElement('button');
+                playBtn.className = 'btn';
+                playBtn.textContent = 'Play';
+                playBtn.addEventListener('click', () => {
+                    currentMode = index;
+                    startGame();
+                });
+                
+                const editBtn = document.createElement('button');
+                editBtn.className = 'btn';
+                editBtn.textContent = 'Edit';
+                editBtn.addEventListener('click', () => {
+                    editMode(index);
+                });
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn';
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.addEventListener('click', () => {
+                    if (confirm(`Delete "${mode.name}" mode?`)) {
+                        modes.splice(index, 1);
+                        localStorage.setItem('gameModes', JSON.stringify(modes));
+                        updateModesList();
+                    }
+                });
+                
+                modeAction.appendChild(playBtn);
+                modeAction.appendChild(editBtn);
+                modeAction.appendChild(deleteBtn);
+                
+                modeItem.appendChild(modeName);
+                modeItem.appendChild(modeInfo);
+                modeItem.appendChild(modeAction);
+                
+                modesList.appendChild(modeItem);
+            });
+        }
+
+        // Edit a mode
+        function editMode(index) {
+            editingModeIndex = index;
+            
+            if (index === -1) {
+                // New mode
+                editModeTitle.textContent = 'Add New Mode';
+                modeName.value = '';
+                modeWords.value = '';
+            } else {
+                // Edit existing mode
+                editModeTitle.textContent = 'Edit Mode';
+                modeName.value = modes[index].name;
+                modeWords.value = modes[index].words;
+            }
+            
+            showScreen(editModeScreen);
+        }
+
+        // Save a mode
+        function saveMode() {
+            if (modeName.value.trim() === '') {
+                alert('Please enter a mode name');
+                return;
+            }
+            
+            if (modeWords.value.trim() === '') {
+                alert('Please enter at least one word or phrase');
+                return;
+            }
+            
+            const mode = {
+                name: modeName.value.trim(),
+                words: modeWords.value.trim()
+            };
+            
+            if (editingModeIndex === -1) {
+                // New mode
+                modes.push(mode);
+            } else {
+                // Update existing mode
+                modes[editingModeIndex] = mode;
+            }
+            
+            localStorage.setItem('gameModes', JSON.stringify(modes));
+            updateModesList();
+            showScreen(modesScreen);
+        }
+
         // Initialize the game
         function initGame() {
-            words = wordsList.value.split('\n').filter(word => word.trim() !== '');
+            if (currentMode === null && modes.length > 0) {
+                currentMode = 0;
+            }
+            
+            if (currentMode === null || currentMode >= modes.length) {
+                alert('Please select or create a game mode first!');
+                showScreen(modesScreen);
+                return false;
+            }
+            
+            words = modes[currentMode].words.split('\n').filter(word => word.trim() !== '');
             if (words.length === 0) {
-                alert('Please add at least one word to the list in settings!');
+                alert('Please add at least one word to the selected mode!');
                 return false;
             }
             
@@ -294,9 +495,19 @@ Laughing</textarea>
             showScreen(gameScreen);
         }
 
+        // Show the back confirmation modal
+        function showBackConfirmation() {
+            backConfirmModal.style.display = 'flex';
+        }
+
+        // Hide the back confirmation modal
+        function hideBackConfirmation() {
+            backConfirmModal.style.display = 'none';
+        }
+
         // Helper function to show only one screen
         function showScreen(screenToShow) {
-            [startScreen, gameScreen, correctScreen, passScreen, resultScreen, settingsScreen].forEach(screen => {
+            [startScreen, gameScreen, correctScreen, passScreen, resultScreen, settingsScreen, modesScreen, editModeScreen].forEach(screen => {
                 screen.style.display = 'none';
             });
             
@@ -337,28 +548,28 @@ Laughing</textarea>
             }
         }
 
-        // Process orientation data
-        let lastGamma = 0;
+        // Process orientation data based on your diagram
+        let lastBeta = 0;
         let isTransitioning = false;
         
         function handleOrientation(event) {
             if (!isGameRunning || isTransitioning) return;
             
-            // Beta is front-to-back tilt (0 when flat, positive when tilted up)
+            // Beta is front-to-back tilt
             const beta = event.beta;
             
-            // Detect tilts exceeding thresholds
-            if (beta < -45 && lastGamma > -45) {  // Tilted up (screen facing down)
+            // Check for significant forward/backward tilt as shown in your diagram
+            if (beta < -40 && lastBeta > -20) {  // Tilted forward (around X axis)
                 isTransitioning = true;
-                passWord();
+                passWord(); // Incorrect
                 setTimeout(() => { isTransitioning = false; }, 800);
-            } else if (beta > 45 && lastGamma < 45) {  // Tilted down (screen facing up)
+            } else if (beta > 40 && lastBeta < 20) {  // Tilted backward (around X axis)
                 isTransitioning = true;
-                correctGuess();
+                correctGuess(); // Correct
                 setTimeout(() => { isTransitioning = false; }, 800);
             }
             
-            lastGamma = beta;
+            lastBeta = beta;
         }
 
         // Fallback keyboard controls
@@ -367,9 +578,9 @@ Laughing</textarea>
                 if (!isGameRunning) return;
                 
                 if (event.key === 'ArrowUp') {
-                    passWord();
+                    passWord(); // Incorrect
                 } else if (event.key === 'ArrowDown') {
-                    correctGuess();
+                    correctGuess(); // Correct
                 }
             });
         }
@@ -389,20 +600,49 @@ Laughing</textarea>
                 const diffY = endY - startY;
                 
                 if (diffY < -50) {  // Swiped up
-                    passWord();
+                    passWord(); // Incorrect
                 } else if (diffY > 50) {  // Swiped down
-                    correctGuess();
+                    correctGuess(); // Correct
                 }
             });
         }
 
         // Event listeners
-        startBtn.addEventListener('click', startGame);
+        startBtn.addEventListener('click', () => {
+            if (modes.length === 0) {
+                alert('Please create at least one game mode first!');
+                showScreen(modesScreen);
+            } else {
+                currentMode = 0;
+                startGame();
+            }
+        });
+        
         settingsBtn.addEventListener('click', () => showScreen(settingsScreen));
+        modesBtn.addEventListener('click', () => showScreen(modesScreen));
+        
+        backGameBtn.addEventListener('click', showBackConfirmation);
+        continueGameBtn.addEventListener('click', () => {
+            hideBackConfirmation();
+        });
+        exitGameBtn.addEventListener('click', () => {
+            hideBackConfirmation();
+            clearInterval(timerInterval);
+            isGameRunning = false;
+            showScreen(startScreen);
+        });
+        
         playAgainBtn.addEventListener('click', startGame);
         homeBtn.addEventListener('click', () => showScreen(startScreen));
+        
         saveSettingsBtn.addEventListener('click', saveSettings);
         cancelSettingsBtn.addEventListener('click', () => showScreen(startScreen));
+        
+        addModeBtn.addEventListener('click', () => editMode(-1));
+        backModesBtn.addEventListener('click', () => showScreen(startScreen));
+        
+        saveModeBtn.addEventListener('click', saveMode);
+        cancelModeBtn.addEventListener('click', () => showScreen(modesScreen));
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
