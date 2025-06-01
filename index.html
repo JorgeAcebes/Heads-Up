@@ -258,6 +258,7 @@
         let words = [];
         let currentWordIndex = 0;
         let timerValue = 60;
+        let gameTimerSetting = 60; // Nueva variable para guardar el tiempo configurado
         let timerInterval;
         let correctCount = 0;
         let passCount = 0;
@@ -271,7 +272,7 @@
         function loadSettings() {
             if (localStorage.getItem('timerSetting')) {
                 timerSetting.value = localStorage.getItem('timerSetting');
-                timerValue = parseInt(timerSetting.value);
+                gameTimerSetting = parseInt(timerSetting.value); // Actualizar la variable de configuración
             }
             
             if (localStorage.getItem('controlsInverted')) {
@@ -301,7 +302,7 @@
             localStorage.setItem('timerSetting', timerSetting.value);
             localStorage.setItem('controlsInverted', invertControls.checked);
             
-            timerValue = parseInt(timerSetting.value);
+            gameTimerSetting = parseInt(timerSetting.value); // Actualizar la variable de configuración
             controlsInverted = invertControls.checked;
             
             showScreen(startScreen);
@@ -436,6 +437,8 @@
             correctCount = 0;
             passCount = 0;
             
+            // CORRECCIÓN: Restaurar el tiempo desde la configuración guardada
+            timerValue = gameTimerSetting;
             timerElement.textContent = timerValue;
             currentWordElement.textContent = 'Ready?';
             
