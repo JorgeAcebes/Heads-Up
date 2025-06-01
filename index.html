@@ -120,7 +120,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
+            background-color: #eee;
             transition: .4s;
             border-radius: 34px;
         }
@@ -145,79 +145,76 @@
 </head>
 <body>
     <div id="start-screen" class="screen">
-        <h1>Heads Up Charades</h1>
-        <p>Swipe up/down to mark correct/incorrect</p>
-        <button id="start-btn" class="btn">Start Game</button>
-        <button id="modes-btn" class="btn">Game Modes</button>
-        <button id="settings-btn" class="btn">Settings</button>
+        <h1>HEADS UP</h1>
+        <p>↑: Correcto - ↓: Incorrecto</p>
+        <button id="start-btn" class="btn">Comenzar el Juego</button>
+        <button id="modes-btn" class="btn">Categorías</button>
+        <button id="settings-btn" class="btn">Ajustes</button>
     </div>
 
     <div id="game-screen" class="screen game-screen" style="display: none;">
         <div class="timer" id="timer">60</div>
-        <div class="word" id="current-word">Ready?</div>
+        <div class="word" id="current-word">¿Preparado?</div>
     </div>
 
     <div id="correct-screen" class="screen correct-screen" style="display: none;">
-        <div class="action">CORRECT!</div>
+        <div class="action">¡Correcto!</div>
     </div>
 
     <div id="pass-screen" class="screen pass-screen" style="display: none;">
-        <div class="action">INCORRECT!</div>
+        <div class="action">¡Siguiente!</div>
     </div>
 
     <div id="result-screen" class="screen result-screen" style="display: none;">
-        <h2>Game Over!</h2>
+        <h2>¡Se Acabó!</h2>
         <div id="score" style="font-size: 2rem; margin: 20px 0;">
-            Correct: 0<br>
-            Passed: 0
+            Correctas: 0<br>
+            Omitidas: 0
         </div>
         <button id="play-again-btn" class="btn">Play Again</button>
-        <button id="home-btn" class="btn">Home</button>
+        <button id="home-btn" class="btn">Inicio</button>
     </div>
 
     <div id="settings-screen" class="screen settings-screen" style="display: none;">
         <h2>Settings</h2>
         <div class="setting-item">
-            <label for="timer-setting">Timer (seconds):</label>
+            <label for="timer-setting">Temporizador (segundos):</label>
             <input type="number" id="timer-setting" min="10" max="300" value="60">
         </div>
         <div class="setting-item">
             <label for="invert-controls">
-                Invert Controls:
-                <span style="font-size: 0.8rem; display: block;">
-                    Default: Swipe UP = Correct, Swipe DOWN = Incorrect
-                </span>
+                Invertir Controles
             </label>
             <label class="switch">
                 <input type="checkbox" id="invert-controls">
                 <span class="slider"></span>
             </label>
         </div>
-        <button id="save-settings-btn" class="btn">Save Settings</button>
-        <button id="cancel-settings-btn" class="btn">Cancel</button>
+        <button id="save-settings-btn" class="btn">Guardar</button>
+        <button id="cancel-settings-btn" class="btn">Cancelar</button>
     </div>
 
     <div id="modes-screen" class="screen modes-screen" style="display: none;">
-        <h2>Game Modes</h2>
+        <h2>Categorías</h2>
         <div id="modes-list">
             <!-- Modes will be populated here -->
         </div>
-        <button id="add-mode-btn" class="btn">Add New Mode</button>
-        <button id="back-modes-btn" class="btn">Back</button>
+        <button id="add-mode-btn" class="btn">Agregar Nuevo Modo</button>
+        <button id="back-modes-btn" class="btn">Atrás</button>
     </div>
 
     <div id="edit-mode-screen" class="screen edit-mode-screen" style="display: none;">
-        <h2 id="edit-mode-title">Edit Mode</h2>
+        <h2 id="edit-mode-title">Editar Categoría</h2>
         <div class="setting-item">
-            <label for="mode-name">Mode Name:</label>
+            <label for="mode-name">Nombre:</label>
             <input type="text" id="mode-name" placeholder="Enter mode name">
         </div>
         <div class="setting-item">
-            <label for="mode-words">Words/Phrases (one per line):</label>
+            <label for="mode-words">Palabras o Frases (una por línea):</label>
             <textarea id="mode-words" placeholder="Enter words or phrases, one per line"></textarea>
         </div>
-        <button id="save-mode-btn" class="btn">Save Mode</button>
-        <button id="cancel-mode-btn" class="btn">Cancel</button>
+        <button id="save-mode-btn" class="btn">Guardar Categoría</button>
+        <button id="cancel-mode-btn" class="btn">Cancelar</button>
     </div>
 
     <script>
@@ -285,12 +282,33 @@
             } else {
                 // Default mode if none exist
                 modes = [{
-                    name: 'Animals',
-                    words: 'Dog\nCat\nElephant\nLion\nTiger\nGiraffe\nMonkey\nZebra\nKoala\nKangaroo'
-                }, {
-                    name: 'Sports',
-                    words: 'Soccer\nBasketball\nTennis\nSwimming\nGolf\nBaseball\nVolleyball\nHockey\nSurfing\nSkiing'
-                }];
+    name: 'Animales',
+    words: 'Perro\nGato\nElefante\nLeón\nTigre\nJirafa\nMono\nCebra\nOso\nLobo\nZorro\nConejo\nCaballo\nVaca\nCerdo\nGallina\nPato\nÁguila\nBúho\nPaloma\nTiburón\nDelfín\nBallena\nPulpo\nMedusa\nSerpiente\nCocodrilo\nTortuga\nRana\nSapo\nAbeja\nMariposa\nHormiga\nEscorpion\nCaracol\nFoca\nPingüino\nKoala\nCanguro\nCamello\nLlama\nPavo Real\nCisne\nGorila\nChimpancé\nHipopótamo\nRinoceronte\nMurciélago\nTejón'
+},{
+    name: 'Deportes',
+    words: 'Fútbol\nBaloncesto\nTenis\nGolf\nNatación\nCiclismo\nBoxeo\nAtletismo\nVoleibol\nRugby\nHockey\nEsquí\nSnowboard\nSurf\nPádel\nBádminton\nJudo\nKarate\nTaekwondo\nGimnasia\nHípica\nAutomovilismo\nMotociclismo\nPiragüismo\nVela\nRemo\nTriatlón\nMaratón\nSenderismo\nEscalada\nParapente\nPuenting\nBalonmano\nWaterpolo\nLucha Libre\nPatinaje\nEsgrima\nTiro con Arco\nTiro Olímpico\nBillar\nDardos\nAjedrez\nFrontón\nFútbol Sala\nCricket\nBéisbol'
+},{
+    name: 'Objetos cotidianos',
+    words: 'Silla\nMesa\nCama\nSofá\nLámpara\nTeléfono\nLibro\nVaso\nPlato\nTenedor\nCuchillo\nCuchara\nBotella\nBolígrafo\nCuaderno\nTelevisión\nRadio\nNevera\nHorno\nMicroondas\nLavadora\nSecadora\nEspejo\nCepillo\nPeine\nToalla\nJabón\nChampú\nCrema\nParaguas\nBolso\nMochila\nGafas\nSombrero\nBufanda\nGuantes\nZapatos\nCamisa\nPantalón\nVestido\nFalda\nCalcetines\nCorbata\nCollar\nPulsera\nReloj\nLlaves\nMonedero\nGorra\nCartera'
+},{
+    name: 'Profesiones',
+    words: 'Médico\nEnfermero\nBombero\nPolicía\nProfesor\nCocinero\nCamarero\nFontanero\nElectricista\nCarpintero\nPescador\nAgricultor\nGanadero\nPanadero\nCarnicero\nPeluquero\nBarbero\nTaxista\nConductor\nPiloto\nAzafata\nIngeniero\nArquitecto\nAbogado\nJuez\nPeriodista\nEscritor\nActor\nCantante\nMúsico\nPintor\nEscultor\nFotógrafo\nDiseñador\nProgramador\nContable\nBanquero\nComerciante\nVendedor\nDependiente\nCajero\nRecepcionista\nSecretario\nLimpiador\nJardinero\nMecánico\nSoldado\nMarinero\nMonja'
+},{
+    name: 'Acciones/verbos',
+    words: 'Correr\nSaltar\nBailar\nCantar\nReír\nLlorar\nDormir\nComer\nBeber\nNadar\nVolar\nConducir\nEscribir\nLeer\nDibujar\nPintar\nCocinar\nLimpiar\nLavar\nPlanchar\nComprar\nVender\nRegalar\nAbrir\nCerrar\nSubir\nBajar\nEmpujar\nTirar\nJugar\nTrabajar\nEstudiar\nEnseñar\nAprender\nEscuchar\nHablar\nGritar\nSusurrar\nSoñar\nPensar\nRecordar\nOlvidar\nAmar\nOdiar\nBesar\nAbrazar\nSaludar\nDespedir\nGanar\nPerder'
+},{
+    name: 'Países o ciudades',
+    words: 'España\nFrancia\nItalia\nPortugal\nGrecia\nMarruecos\nTurquía\nEgipto\nArgentina\nMéxico\nBrasil\nColombia\nPerú\nChile\nVenezuela\nEstados Unidos\nCanadá\nReino Unido\nAlemania\nRusia\nChina\nJapón\nIndia\nAustralia\nSudáfrica\nMadrid\nBarcelona\nValencia\nSevilla\nBilbao\nLisboa\nOporto\nParís\nRoma\nMilán\nVenecia\nAtenas\nEstambul\nEl Cairo\nNueva York\nLos Ángeles\nBuenos Aires\nRío de Janeiro\nSantiago\nLima\nBogotá\nCaracas\nSídney\nTokio\nPekín'
+},{
+    name: 'Comidas y bebidas',
+    words: 'Paella\nTortilla de patatas\nHummus\nGazpacho\nSalmorejo\nFabada\nCocido\nChurros\nTapas\nPisto\nBocadillo\nLentejas\nCroquetas\nPatatas bravas\nEmpanada\nMigas\nPan con tomate\nFlan\nBrócoli\nColiflor\nBerenjena\nCalabacín\nCalabaza\nPimiento\nTomate\nPepino\nCebolla\nAjo\nZanahoria\nLechuga\nTarta de Santiago\nTurrón\nPolvorones\nVino tinto\nVino blanco\nCerveza\nTinto de verano\nAgua\nCafé\nTé\nZumo\nChampiñón\nSetas\nNaranja\nManzana\nPera\nPlátano\nUva\nMelón\nSandía\nFresa\nCereza\nCiruela\nMelocotón\nSidra'
+},{
+    name: 'Inventos importantes',
+    words: 'Rueda\nImprenta\nElectricidad\nBombilla\nTeléfono\nRadio\nTelevisión\nComputadora\nInternet\nTeléfono móvil\nGPS\nAviones\nAutomóvil\nTren\nBarco de vapor\nBicicleta\nMotor\nRefrigerador\nMicroondas\nLavadora\nAspiradora\nAire acondicionado\nCalefacción\nVacunas\nPenicilina\nRayos X\nAnestesia\nMarcapasos\nPrótesis\nLentes\nTelescopio\nMicroscopio\nCámara de fotos\nCámara de video\nReloj\nCalendario\nBrújula\nMapa\nPapel\nPlástico\nVidrio\nCemento\nHormigón\nAcero\nAluminio\nPetróleo\nGas natural\nEnergía nuclear\nEnergía solar\nEnergía eólica'
+},{
+    name: 'Familia Hernández',
+    words: 'Paloma\nSantiago\nAbuela\nLola\nCarlos\nArmando\nPablo\nÁngela\nJorge'
+}];
                 localStorage.setItem('gameModes', JSON.stringify(modes));
             }
             
@@ -322,14 +340,14 @@
                 
                 const wordCount = mode.words.split('\n').filter(word => word.trim() !== '').length;
                 const modeInfo = document.createElement('div');
-                modeInfo.textContent = `${wordCount} words/phrases`;
+                modeInfo.textContent = `${wordCount} Items`;
                 
                 const modeAction = document.createElement('div');
                 modeAction.className = 'mode-action';
                 
                 const playBtn = document.createElement('button');
                 playBtn.className = 'btn';
-                playBtn.textContent = 'Play';
+                playBtn.textContent = 'Jugar';
                 playBtn.addEventListener('click', () => {
                     currentMode = index;
                     startGame();
@@ -337,16 +355,16 @@
                 
                 const editBtn = document.createElement('button');
                 editBtn.className = 'btn';
-                editBtn.textContent = 'Edit';
+                editBtn.textContent = 'Editar';
                 editBtn.addEventListener('click', () => {
                     editMode(index);
                 });
                 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'btn';
-                deleteBtn.textContent = 'Delete';
+                deleteBtn.textContent = 'Eliminar';
                 deleteBtn.addEventListener('click', () => {
-                    if (confirm(`Delete "${mode.name}" mode?`)) {
+                    if (confirm(`¿Eliminar la categoría "${mode.name}"?`)) {
                         modes.splice(index, 1);
                         localStorage.setItem('gameModes', JSON.stringify(modes));
                         updateModesList();
