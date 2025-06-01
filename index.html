@@ -255,7 +255,7 @@
         let words = [];
         let currentWordIndex = 0;
         let timerValue = 60;
-        let gameTimerSetting = 60; // Nueva variable para guardar el tiempo configurado
+        let gameTimerSetting = 60;
         let timerInterval;
         let correctCount = 0;
         let passCount = 0;
@@ -265,73 +265,86 @@
         let editingModeIndex = -1;
         let controlsInverted = false;
 
-        // Load settings and modes from localStorage
+        // Get default modes
+        function getDefaultModes() {
+            return [
+                {
+                    name: 'Animales',
+                    words: 'Perro\nGato\nElefante\nLeón\nTigre\nJirafa\nMono\nCebra\nOso\nLobo\nZorro\nConejo\nCaballo\nVaca\nCerdo\nGallina\nPato\nÁguila\nBúho\nPaloma\nTiburón\nDelfín\nBallena\nPulpo\nMedusa\nSerpiente\nCocodrilo\nTortuga\nRana\nSapo\nAbeja\nMariposa\nHormiga\nEscorpion\nCaracol\nFoca\nPingüino\nKoala\nCanguro\nCamello\nLlama\nPavo Real\nCisne\nGorila\nChimpancé\nHipopótamo\nRinoceronte\nMurciélago\nTejón'
+                },
+                {
+                    name: 'Deportes',
+                    words: 'Fútbol\nBaloncesto\nTenis\nGolf\nNatación\nCiclismo\nBoxeo\nAtletismo\nVoleibol\nRugby\nHockey\nEsquí\nSnowboard\nSurf\nPádel\nBádminton\nJudo\nKarate\nTaekwondo\nGimnasia\nHípica\nAutomovilismo\nMotociclismo\nPiragüismo\nVela\nRemo\nTriatlón\nMaratón\nSenderismo\nEscalada\nParapente\nPuenting\nBalonmano\nWaterpolo\nLucha Libre\nPatinaje\nEsgrima\nTiro con Arco\nTiro Olímpico\nBillar\nDardos\nAjedrez\nFrontón\nFútbol Sala\nCricket\nBéisbol'
+                },
+                {
+                    name: 'Objetos cotidianos',
+                    words: 'Silla\nMesa\nCama\nSofá\nLámpara\nTeléfono\nLibro\nVaso\nPlato\nTenedor\nCuchillo\nCuchara\nBotella\nBolígrafo\nCuaderno\nTelevisión\nRadio\nNevera\nHorno\nMicroondas\nLavadora\nSecadora\nEspejo\nCepillo\nPeine\nToalla\nJabón\nChampú\nCrema\nParaguas\nBolso\nMochila\nGafas\nSombrero\nBufanda\nGuantes\nZapatos\nCamisa\nPantalón\nVestido\nFalda\nCalcetines\nCorbata\nCollar\nPulsera\nReloj\nLlaves\nMonedero\nGorra\nCartera'
+                },
+                {
+                    name: 'Profesiones',
+                    words: 'Médico\nEnfermero\nBombero\nPolicía\nProfesor\nCocinero\nCamarero\nFontanero\nElectricista\nCarpintero\nPescador\nAgricultor\nGanadero\nPanadero\nCarnicero\nPeluquero\nBarbero\nTaxista\nConductor\nPiloto\nAzafata\nIngeniero\nArquitecto\nAbogado\nJuez\nPeriodista\nEscritor\nActor\nCantante\nMúsico\nPintor\nEscultor\nFotógrafo\nDiseñador\nProgramador\nContable\nBanquero\nComerciante\nVendedor\nDependiente\nCajero\nRecepcionista\nSecretario\nLimpiador\nJardinero\nMecánico\nSoldado\nMarinero\nMonja'
+                },
+                {
+                    name: 'Acciones/verbos',
+                    words: 'Correr\nSaltar\nBailar\nCantar\nReír\nLlorar\nDormir\nComer\nBeber\nNadar\nVolar\nConducir\nEscribir\nLeer\nDibujar\nPintar\nCocinar\nLimpiar\nLavar\nPlanchar\nComprar\nVender\nRegalar\nAbrir\nCerrar\nSubir\nBajar\nEmpujar\nTirar\nJugar\nTrabajar\nEstudiar\nEnseñar\nAprender\nEscuchar\nHablar\nGritar\nSusurrar\nSoñar\nPensar\nRecordar\nOlvidar\nAmar\nOdiar\nBesar\nAbrazar\nSaludar\nDespedir\nGanar\nPerder'
+                },
+                {
+                    name: 'Países o ciudades',
+                    words: 'España\nFrancia\nItalia\nPortugal\nGrecia\nMarruecos\nTurquía\nEgipto\nArgentina\nMéxico\nBrasil\nColombia\nPerú\nChile\nVenezuela\nEstados Unidos\nCanadá\nReino Unido\nAlemania\nRusia\nChina\nJapón\nIndia\nAustralia\nSudáfrica\nMadrid\nBarcelona\nValencia\nSevilla\nBilbao\nLisboa\nOporto\nParís\nRoma\nMilán\nVenecia\nAtenas\nEstambul\nEl Cairo\nNueva York\nLos Ángeles\nBuenos Aires\nRío de Janeiro\nSantiago\nLima\nBogotá\nCaracas\nSídney\nTokio\nPekín'
+                },
+                {
+                    name: 'Comidas y bebidas',
+                    words: 'Paella\nTortilla de patatas\nHummus\nGazpacho\nSalmorejo\nFabada\nCocido\nChurros\nTapas\nPisto\nBocadillo\nLentejas\nCroquetas\nPatatas bravas\nEmpanada\nMigas\nPan con tomate\nFlan\nBrócoli\nColiflor\nBerenjena\nCalabacín\nCalabaza\nPimiento\nTomate\nPepino\nCebolla\nAjo\nZanahoria\nLechuga\nTarta de Santiago\nTurrón\nPolvorones\nVino tinto\nVino blanco\nCerveza\nTinto de verano\nAgua\nCafé\nTé\nZumo\nChampiñón\nSetas\nNaranja\nManzana\nPera\nPlátano\nUva\nMelón\nSandía\nFresa\nCereza\nCiruela\nMelocotón\nSidra'
+                },
+                {
+                    name: 'Inventos importantes',
+                    words: 'Rueda\nImprenta\nElectricidad\nBombilla\nTeléfono\nRadio\nTelevisión\nComputadora\nInternet\nTeléfono móvil\nGPS\nAviones\nAutomóvil\nTren\nBarco de vapor\nBicicleta\nMotor\nRefrigerador\nMicroondas\nLavadora\nAspiradora\nAire acondicionado\nCalefacción\nVacunas\nPenicilina\nRayos X\nAnestesia\nMarcapasos\nPrótesis\nLentes\nTelescopio\nMicroscopio\nCámara de fotos\nCámara de video\nReloj\nCalendario\nBrújula\nMapa\nPapel\nPlástico\nVidrio\nCemento\nHormigón\nAcero\nAluminio\nPetróleo\nGas natural\nEnergía nuclear\nEnergía solar\nEnergía eólica'
+                },
+                {
+                    name: 'Familia Hernández',
+                    words: 'Paloma\nSantiago\nAbuela\nLola\nCarlos\nArmando\nPablo\nÁngela\nJorge'
+                }
+            ];
+        }
+
+        // Load settings and modes using in-memory storage
         function loadSettings() {
-            if (localStorage.getItem('timerSetting')) {
-                timerSetting.value = localStorage.getItem('timerSetting');
-                gameTimerSetting = parseInt(timerSetting.value); // Actualizar la variable de configuración
-            }
-            
-            if (localStorage.getItem('controlsInverted')) {
-                controlsInverted = localStorage.getItem('controlsInverted') === 'true';
+            // Use in-memory storage instead of localStorage
+            if (window.gameSettings) {
+                timerSetting.value = window.gameSettings.timerSetting || 60;
+                gameTimerSetting = parseInt(timerSetting.value);
+                
+                controlsInverted = window.gameSettings.controlsInverted || false;
                 invertControls.checked = controlsInverted;
+                
+                modes = window.gameSettings.gameModes || getDefaultModes();
+            } else {
+                // Initialize with defaults
+                gameTimerSetting = 60;
+                controlsInverted = false;
+                modes = getDefaultModes();
+                
+                // Save to memory
+                window.gameSettings = {
+                    timerSetting: 60,
+                    controlsInverted: false,
+                    gameModes: modes
+                };
             }
             
-            if (localStorage.getItem('gameModes')) {
-                modes = JSON.parse(localStorage.getItem('gameModes'));
-          } else {
-    // Default modes if none exist
-    modes = [
-        {
-            name: 'Animales',
-            words: 'Perro\nGato\nElefante\nLeón\nTigre\nJirafa\nMono\nCebra\nOso\nLobo\nZorro\nConejo\nCaballo\nVaca\nCerdo\nGallina\nPato\nÁguila\nBúho\nPaloma\nTiburón\nDelfín\nBallena\nPulpo\nMedusa\nSerpiente\nCocodrilo\nTortuga\nRana\nSapo\nAbeja\nMariposa\nHormiga\nEscorpion\nCaracol\nFoca\nPingüino\nKoala\nCanguro\nCamello\nLlama\nPavo Real\nCisne\nGorila\nChimpancé\nHipopótamo\nRinoceronte\nMurciélago\nTejón'
-        },
-        {
-            name: 'Deportes',
-            words: 'Fútbol\nBaloncesto\nTenis\nGolf\nNatación\nCiclismo\nBoxeo\nAtletismo\nVoleibol\nRugby\nHockey\nEsquí\nSnowboard\nSurf\nPádel\nBádminton\nJudo\nKarate\nTaekwondo\nGimnasia\nHípica\nAutomovilismo\nMotociclismo\nPiragüismo\nVela\nRemo\nTriatlón\nMaratón\nSenderismo\nEscalada\nParapente\nPuenting\nBalonmano\nWaterpolo\nLucha Libre\nPatinaje\nEsgrima\nTiro con Arco\nTiro Olímpico\nBillar\nDardos\nAjedrez\nFrontón\nFútbol Sala\nCricket\nBéisbol'
-        },
-        {
-            name: 'Objetos cotidianos',
-            words: 'Silla\nMesa\nCama\nSofá\nLámpara\nTeléfono\nLibro\nVaso\nPlato\nTenedor\nCuchillo\nCuchara\nBotella\nBolígrafo\nCuaderno\nTelevisión\nRadio\nNevera\nHorno\nMicroondas\nLavadora\nSecadora\nEspejo\nCepillo\nPeine\nToalla\nJabón\nChampú\nCrema\nParaguas\nBolso\nMochila\nGafas\nSombrero\nBufanda\nGuantes\nZapatos\nCamisa\nPantalón\nVestido\nFalda\nCalcetines\nCorbata\nCollar\nPulsera\nReloj\nLlaves\nMonedero\nGorra\nCartera'
-        },
-        {
-            name: 'Profesiones',
-            words: 'Médico\nEnfermero\nBombero\nPolicía\nProfesor\nCocinero\nCamarero\nFontanero\nElectricista\nCarpintero\nPescador\nAgricultor\nGanadero\nPanadero\nCarnicero\nPeluquero\nBarbero\nTaxista\nConductor\nPiloto\nAzafata\nIngeniero\nArquitecto\nAbogado\nJuez\nPeriodista\nEscritor\nActor\nCantante\nMúsico\nPintor\nEscultor\nFotógrafo\nDiseñador\nProgramador\nContable\nBanquero\nComerciante\nVendedor\nDependiente\nCajero\nRecepcionista\nSecretario\nLimpiador\nJardinero\nMecánico\nSoldado\nMarinero\nMonja'
-        },
-        {
-            name: 'Acciones/verbos',
-            words: 'Correr\nSaltar\nBailar\nCantar\nReír\nLlorar\nDormir\nComer\nBeber\nNadar\nVolar\nConducir\nEscribir\nLeer\nDibujar\nPintar\nCocinar\nLimpiar\nLavar\nPlanchar\nComprar\nVender\nRegalar\nAbrir\nCerrar\nSubir\nBajar\nEmpujar\nTirar\nJugar\nTrabajar\nEstudiar\nEnseñar\nAprender\nEscuchar\nHablar\nGritar\nSusurrar\nSoñar\nPensar\nRecordar\nOlvidar\nAmar\nOdiar\nBesar\nAbrazar\nSaludar\nDespedir\nGanar\nPerder'
-        },
-        {
-            name: 'Países o ciudades',
-            words: 'España\nFrancia\nItalia\nPortugal\nGrecia\nMarruecos\nTurquía\nEgipto\nArgentina\nMéxico\nBrasil\nColombia\nPerú\nChile\nVenezuela\nEstados Unidos\nCanadá\nReino Unido\nAlemania\nRusia\nChina\nJapón\nIndia\nAustralia\nSudáfrica\nMadrid\nBarcelona\nValencia\nSevilla\nBilbao\nLisboa\nOporto\nParís\nRoma\nMilán\nVenecia\nAtenas\nEstambul\nEl Cairo\nNueva York\nLos Ángeles\nBuenos Aires\nRío de Janeiro\nSantiago\nLima\nBogotá\nCaracas\nSídney\nTokio\nPekín'
-        },
-        {
-            name: 'Comidas y bebidas',
-            words: 'Paella\nTortilla de patatas\nHummus\nGazpacho\nSalmorejo\nFabada\nCocido\nChurros\nTapas\nPisto\nBocadillo\nLentejas\nCroquetas\nPatatas bravas\nEmpanada\nMigas\nPan con tomate\nFlan\nBrócoli\nColiflor\nBerenjena\nCalabacín\nCalabaza\nPimiento\nTomate\nPepino\nCebolla\nAjo\nZanahoria\nLechuga\nTarta de Santiago\nTurrón\nPolvorones\nVino tinto\nVino blanco\nCerveza\nTinto de verano\nAgua\nCafé\nTé\nZumo\nChampiñón\nSetas\nNaranja\nManzana\nPera\nPlátano\nUva\nMelón\nSandía\nFresa\nCereza\nCiruela\nMelocotón\nSidra'
-        },
-        {
-            name: 'Inventos importantes',
-            words: 'Rueda\nImprenta\nElectricidad\nBombilla\nTeléfono\nRadio\nTelevisión\nComputadora\nInternet\nTeléfono móvil\nGPS\nAviones\nAutomóvil\nTren\nBarco de vapor\nBicicleta\nMotor\nRefrigerador\nMicroondas\nLavadora\nAspiradora\nAire acondicionado\nCalefacción\nVacunas\nPenicilina\nRayos X\nAnestesia\nMarcapasos\nPrótesis\nLentes\nTelescopio\nMicroscopio\nCámara de fotos\nCámara de video\nReloj\nCalendario\nBrújula\nMapa\nPapel\nPlástico\nVidrio\nCemento\nHormigón\nAcero\nAluminio\nPetróleo\nGas natural\nEnergía nuclear\nEnergía solar\nEnergía eólica'
-        },
-        {
-            name: 'Familia Hernández',
-            words: 'Paloma\nSantiago\nAbuela\nLola\nCarlos\nArmando\nPablo\nÁngela\nJorge'
-        }
-    ];
-    localStorage.setItem('gameModes', JSON.stringify(modes));
-}
-
-updateModesList();
+            updateModesList();
         }
 
-        // Save settings to localStorage
+        // Save settings to memory
         function saveSettings() {
-            localStorage.setItem('timerSetting', timerSetting.value);
-            localStorage.setItem('controlsInverted', invertControls.checked);
-            
-            gameTimerSetting = parseInt(timerSetting.value); // Actualizar la variable de configuración
+            gameTimerSetting = parseInt(timerSetting.value);
             controlsInverted = invertControls.checked;
+            
+            window.gameSettings = {
+                timerSetting: gameTimerSetting,
+                controlsInverted: controlsInverted,
+                gameModes: modes
+            };
             
             showScreen(startScreen);
         }
@@ -375,7 +388,7 @@ updateModesList();
                 deleteBtn.addEventListener('click', () => {
                     if (confirm(`¿Eliminar la categoría "${mode.name}"?`)) {
                         modes.splice(index, 1);
-                        localStorage.setItem('gameModes', JSON.stringify(modes));
+                        window.gameSettings.gameModes = modes;
                         updateModesList();
                     }
                 });
@@ -398,12 +411,12 @@ updateModesList();
             
             if (index === -1) {
                 // New mode
-                editModeTitle.textContent = 'Add New Mode';
+                editModeTitle.textContent = 'Agregar Nueva Categoría';
                 modeName.value = '';
                 modeWords.value = '';
             } else {
                 // Edit existing mode
-                editModeTitle.textContent = 'Edit Mode';
+                editModeTitle.textContent = 'Editar Categoría';
                 modeName.value = modes[index].name;
                 modeWords.value = modes[index].words;
             }
@@ -436,7 +449,7 @@ updateModesList();
                 modes[editingModeIndex] = mode;
             }
             
-            localStorage.setItem('gameModes', JSON.stringify(modes));
+            window.gameSettings.gameModes = modes;
             updateModesList();
             showScreen(modesScreen);
         }
@@ -448,14 +461,14 @@ updateModesList();
             }
             
             if (currentMode === null || currentMode >= modes.length) {
-                alert('Please select or create a game mode first!');
+                alert('¡Por favor selecciona o crea una categoría primero!');
                 showScreen(modesScreen);
                 return false;
             }
             
             words = modes[currentMode].words.split('\n').filter(word => word.trim() !== '');
             if (words.length === 0) {
-                alert('Please add at least one word to the selected mode!');
+                alert('¡Por favor añade al menos una palabra a la categoría seleccionada!');
                 return false;
             }
             
@@ -464,7 +477,6 @@ updateModesList();
             correctCount = 0;
             passCount = 0;
             
-            // CORRECCIÓN: Restaurar el tiempo desde la configuración guardada
             timerValue = gameTimerSetting;
             timerElement.textContent = timerValue;
             currentWordElement.textContent = '¿Preparado?';
@@ -500,7 +512,7 @@ updateModesList();
             clearInterval(timerInterval);
             isGameRunning = false;
             
-            scoreElement.innerHTML = `Correct: ${correctCount}<br>Passed: ${passCount}`;
+            scoreElement.innerHTML = `Correctas: ${correctCount}<br>Omitidas: ${passCount}`;
             showScreen(resultScreen);
         }
 
@@ -617,7 +629,7 @@ updateModesList();
         // Event listeners
         startBtn.addEventListener('click', () => {
             if (modes.length === 0) {
-                alert('Please create at least one game mode first!');
+                alert('¡Por favor crea al menos una categoría primero!');
                 showScreen(modesScreen);
             } else {
                 currentMode = 0;
@@ -640,13 +652,20 @@ updateModesList();
         saveModeBtn.addEventListener('click', saveMode);
         cancelModeBtn.addEventListener('click', () => showScreen(modesScreen));
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        // Initialize everything when page loads
+        function initialize() {
             loadSettings();
             showScreen(startScreen);
             setupTouchControls();
             setupKeyboardControls();
-        });
+        }
+
+        // Make sure initialization happens
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initialize);
+        } else {
+            initialize();
+        }
     </script>
 </body>
 </html>
