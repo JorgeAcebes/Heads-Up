@@ -350,7 +350,6 @@ updateModesList();
                 
                 const wordCount = mode.words.split('\n').filter(word => word.trim() !== '').length;
                 const modeInfo = document.createElement('div');
-                modeInfo.textContent = `${wordCount} Elementos`;
                 
                 const modeAction = document.createElement('div');
                 modeAction.className = 'mode-action';
